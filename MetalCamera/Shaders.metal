@@ -11,50 +11,34 @@
 
 using namespace metal;
 
-// Variables in constant address space
-constant float3 light_position = float3(0.0, 1.0, -1.0);
-constant float4 ambient_color  = float4(0.18, 0.24, 0.8, 1.0);
-constant float4 diffuse_color  = float4(0.4, 0.4, 1.0, 1.0);
 
-typedef struct
-{
-    matrix_float4x4 modelview_projection_matrix;
-    matrix_float4x4 normal_matrix;
-} uniforms_t;
-
-typedef struct
-{
+typedef struct {
     packed_float2 position;
-    packed_float2 normal;
-} vertex_t;
+    packed_float2 texcoord;
+} Vertex;
 
 typedef struct {
     float4 position [[position]];
-    half4  color;
-} ColorInOut;
+    float2 texcoord;
+} Varyings;
 
-// Vertex shader function
-vertex ColorInOut lighting_vertex(device vertex_t* vertex_array [[ buffer(0) ]],
-                                  constant uniforms_t& uniforms [[ buffer(1) ]],
-                                  unsigned int vid [[ vertex_id ]])
-{
-    ColorInOut out;
-    
-    float4 in_position = float4(float2(vertex_array[vid].position), 0.0, 1.0);
-    out.position = uniforms.modelview_projection_matrix * in_position;
-    
-    float3 normal = float3(vertex_array[vid].normal, 0.0);
-    float4 eye_normal = normalize(uniforms.normal_matrix * float4(normal, 0.0));
-    float n_dot_l = dot(eye_normal.rgb, normalize(light_position));
-    n_dot_l = fmax(0.0, n_dot_l);
-    
-    out.color = half4(ambient_color + diffuse_color * n_dot_l);
-    
+vertex Varyings vertexPassthrough(
+	device Vertex* verticies [[ buffer(0) ]],
+	unsigned int vid [[ vertex_id ]]
+) {
+    Varyings out;
+	
+	device Vertex& v = verticies[vid];
+	
+    out.position = float4(float2(v.position), 0.0, 1.0);
+	
+	out.texcoord = v.texcoord;
+	
     return out;
 }
 
-// Fragment shader function
-fragment half4 lighting_fragment(ColorInOut in [[stage_in]])
-{
-    return in.color;
+fragment half4 fragmentColorConversion(
+	Varyings in [[ stage_in ]]
+) {
+    return half4(half2(in.texcoord), 0.0, 1.0);
 }
