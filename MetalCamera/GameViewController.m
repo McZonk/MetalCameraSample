@@ -48,7 +48,6 @@ typedef struct
     id <MTLRenderPipelineState> _pipelineState;
     id <MTLBuffer> _vertexBuffer;
     id <MTLDepthStencilState> _depthState;
-    id <MTLTexture> _depthTex;
     id <MTLTexture> _msaaTex;
     
     // uniforms
@@ -143,8 +142,8 @@ typedef struct
     }
     
     MTLDepthStencilDescriptor *depthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
-    depthStateDesc.depthCompareFunction = MTLCompareFunctionLess;
-    depthStateDesc.depthWriteEnabled = YES;
+    depthStateDesc.depthCompareFunction = MTLCompareFunctionAlways;
+    depthStateDesc.depthWriteEnabled = NO;
     _depthState = [_device newDepthStencilStateWithDescriptor:depthStateDesc];
 }
 
@@ -157,21 +156,6 @@ typedef struct
     _renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
     _renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.65f, 0.65f, 0.65f, 1.0f);
     _renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
-    
-    if (!_depthTex || (_depthTex && (_depthTex.width != texture.width || _depthTex.height != texture.height)))
-    {
-        //  If we need a depth texture and don't have one, or if the depth texture we have is the wrong size
-        //  Then allocate one of the proper size
-        
-        MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat: MTLPixelFormatDepth32Float width: texture.width height: texture.height mipmapped: NO];
-        _depthTex = [_device newTextureWithDescriptor: desc];
-        _depthTex.label = @"Depth";
-        
-        _renderPassDescriptor.depthAttachment.texture = _depthTex;
-        _renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-        _renderPassDescriptor.depthAttachment.clearDepth = 1.0f;
-        _renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-    }
 }
 
 - (void)_render
