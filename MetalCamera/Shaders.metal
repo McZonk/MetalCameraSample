@@ -18,6 +18,11 @@ typedef struct {
 } Vertex;
 
 typedef struct {
+	float3x3 matrix;
+	float3 offset;
+} ColorConversion;
+
+typedef struct {
     float4 position [[position]];
     float2 texcoord;
 } Varyings;
@@ -38,7 +43,15 @@ vertex Varyings vertexPassthrough(
 }
 
 fragment half4 fragmentColorConversion(
-	Varyings in [[ stage_in ]]
+	Varyings in [[ stage_in ]],
+	texture2d<float, access::sample> textureY [[ texture(0) ]],
+	texture2d<float, access::sample> textureCbCr [[ texture(1) ]],
+	constant ColorConversion &colorConversion [[ buffer(0) ]]
 ) {
-    return half4(half2(in.texcoord), 0.0, 1.0);
+	constexpr sampler s(address::clamp_to_edge, filter::linear);
+	float3 ycbcr = float3(textureY.sample(s, in.texcoord).r, textureCbCr.sample(s, in.texcoord).rg);
+	
+	float3 rgb = colorConversion.matrix * (ycbcr + colorConversion.offset);
+	
+	return half4(half3(rgb), 1.0);
 }

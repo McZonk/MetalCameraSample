@@ -21,11 +21,11 @@ float cubeVertexData[16] =
 	 1.0,  1.0,  1.0, 0.0,
 };
 
-typedef struct
-{
-    matrix_float4x4 modelview_projection_matrix;
-    matrix_float4x4 normal_matrix;
-} uniforms_t;
+typedef struct {
+	matrix_float3x3 matrix;
+	vector_float3 offset;
+} ColorConversion;
+
 
 @interface GameViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
 
@@ -52,10 +52,15 @@ typedef struct
     id <MTLRenderPipelineState> _pipelineState;
     id <MTLBuffer> _vertexBuffer;
     id <MTLDepthStencilState> _depthState;
+	id <MTLTexture> _textureY;
+	id <MTLTexture> _textureCbCr;
+	id <MTLBuffer> _colorConversionBuffer;
 	
 	AVCaptureDevice *_captureDevice;
 	AVCaptureSession *_captureSession;
 	dispatch_queue_t _captureQueue;
+	
+	CVMetalTextureCacheRef _textureCache;
 }
 
 - (void)dealloc
@@ -113,6 +118,19 @@ typedef struct
 
 - (void)_setupCapture
 {
+	CVMetalTextureCacheCreate(NULL, NULL, _device, NULL, &_textureCache);
+	
+	ColorConversion colorConversion = {
+		.matrix = {
+			.columns[0] = { 1.164,  1.164, 1.164, },
+			.columns[1] = { 0.000, -0.392, 2.017, },
+			.columns[2] = { 1.596, -0.813, 0.000, },
+		},
+		.offset = { -(16.0/255.0), -0.5, -0.5 },
+	};
+	
+	_colorConversionBuffer = [_device newBufferWithBytes:&colorConversion length:sizeof(colorConversion) options:MTLResourceOptionCPUCacheModeDefault];
+
 	_captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 	if(_captureDevice != nil)
 	{
@@ -124,9 +142,12 @@ typedef struct
 		_captureQueue = dispatch_queue_create("captureQueue", DISPATCH_QUEUE_SERIAL);
 		
 		AVCaptureVideoDataOutput *videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+		videoOutput.videoSettings = @{
+			(NSString*)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
+		};
 		[videoOutput setSampleBufferDelegate:self queue:_captureQueue];
 		[_captureSession addOutput:videoOutput];
-		
+
 		[_captureSession startRunning];
 	}
 }
@@ -195,14 +216,20 @@ typedef struct
     [renderEncoder setDepthStencilState:_depthState];
     
     // Set context state
-    [renderEncoder pushDebugGroup:@"DrawCube"];
-    [renderEncoder setRenderPipelineState:_pipelineState];
-    [renderEncoder setVertexBuffer:_vertexBuffer offset:0 atIndex:0 ];
+	if(_textureY != nil && _textureCbCr != nil)
+	{
+		[renderEncoder pushDebugGroup:@"DrawCube"];
+		[renderEncoder setRenderPipelineState:_pipelineState];
+		[renderEncoder setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+		[renderEncoder setFragmentTexture:_textureY atIndex:0];
+		[renderEncoder setFragmentTexture:_textureCbCr atIndex:1];
+		[renderEncoder setFragmentBuffer:_colorConversionBuffer offset:0 atIndex:0];
+		
+		// Tell the render context we want to draw our primitives
+		[renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4 instanceCount:1];
+		[renderEncoder popDebugGroup];
+	}
 	
-    // Tell the render context we want to draw our primitives
-    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4 instanceCount:1];
-    [renderEncoder popDebugGroup];
-    
     // We're done encoding commands
     [renderEncoder endEncoding];
     
@@ -276,7 +303,49 @@ typedef struct
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-	NSLog(@"%@", sampleBuffer);
+	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+	
+	id<MTLTexture> textureY = nil;
+	id<MTLTexture> textureCbCr = nil;
+	
+	// textureY
+	{
+		size_t width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+		size_t height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
+		MTLPixelFormat pixelFormat = MTLPixelFormatR8Unorm;
+		
+		CVMetalTextureRef texture = NULL;
+		CVReturn status = CVMetalTextureCacheCreateTextureFromImage(NULL, _textureCache, pixelBuffer, NULL, pixelFormat, width, height, 0, &texture);
+		if(status == kCVReturnSuccess)
+		{
+			textureY = CVMetalTextureGetTexture(texture);
+			CFRelease(texture);
+		}
+	}
+	
+	// textureCbCr
+	{
+		size_t width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+		size_t height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+		MTLPixelFormat pixelFormat = MTLPixelFormatRG8Unorm;
+		
+		CVMetalTextureRef texture = NULL;
+		CVReturn status = CVMetalTextureCacheCreateTextureFromImage(NULL, _textureCache, pixelBuffer, NULL, pixelFormat, width, height, 1, &texture);
+		if(status == kCVReturnSuccess)
+		{
+			textureCbCr = CVMetalTextureGetTexture(texture);
+			CFRelease(texture);
+		}
+	}
+	
+	if(textureY != nil && textureCbCr != nil)
+	{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			// always assign the textures atomic
+			_textureY = textureY;
+			_textureCbCr = textureCbCr;
+		});
+	}
 }
 
 @end
