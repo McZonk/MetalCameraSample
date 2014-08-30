@@ -12,51 +12,12 @@ static const NSUInteger g_max_inflight_buffers = 3;
 // Max API memory buffer size.
 static const size_t MAX_BYTES_PER_FRAME = 1024*1024;
 
-float cubeVertexData[216] =
+float cubeVertexData[16] =
 {
-    // Data layout for each line below is:
-    // positionX, positionY, positionZ,     normalX, normalY, normalZ,
-    0.5, -0.5, 0.5,   0.0, -1.0,  0.0,
-    -0.5, -0.5, 0.5,   0.0, -1.0, 0.0,
-    -0.5, -0.5, -0.5,   0.0, -1.0,  0.0,
-    0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-    0.5, -0.5, 0.5,   0.0, -1.0,  0.0,
-    -0.5, -0.5, -0.5,   0.0, -1.0,  0.0,
-    
-    0.5, 0.5, 0.5,    1.0, 0.0,  0.0,
-    0.5, -0.5, 0.5,   1.0,  0.0,  0.0,
-    0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-    0.5, 0.5, -0.5,   1.0, 0.0,  0.0,
-    0.5, 0.5, 0.5,    1.0, 0.0,  0.0,
-    0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-    
-    -0.5, 0.5, 0.5,    0.0, 1.0,  0.0,
-    0.5, 0.5, 0.5,    0.0, 1.0,  0.0,
-    0.5, 0.5, -0.5,   0.0, 1.0,  0.0,
-    -0.5, 0.5, -0.5,   0.0, 1.0,  0.0,
-    -0.5, 0.5, 0.5,    0.0, 1.0,  0.0,
-    0.5, 0.5, -0.5,   0.0, 1.0,  0.0,
-    
-    -0.5, -0.5, 0.5,  -1.0,  0.0, 0.0,
-    -0.5, 0.5, 0.5,   -1.0, 0.0,  0.0,
-    -0.5, 0.5, -0.5,  -1.0, 0.0,  0.0,
-    -0.5, -0.5, -0.5,  -1.0,  0.0,  0.0,
-    -0.5, -0.5, 0.5,  -1.0,  0.0, 0.0,
-    -0.5, 0.5, -0.5,  -1.0, 0.0,  0.0,
-    
-    0.5, 0.5,  0.5,  0.0, 0.0,  1.0,
-    -0.5, 0.5,  0.5,  0.0, 0.0,  1.0,
-    -0.5, -0.5, 0.5,   0.0,  0.0, 1.0,
-    -0.5, -0.5, 0.5,   0.0,  0.0, 1.0,
-    0.5, -0.5, 0.5,   0.0,  0.0,  1.0,
-    0.5, 0.5,  0.5,  0.0, 0.0,  1.0,
-    
-    0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-    -0.5, -0.5, -0.5,   0.0,  0.0, -1.0,
-    -0.5, 0.5, -0.5,  0.0, 0.0, -1.0,
-    0.5, 0.5, -0.5,  0.0, 0.0, -1.0,
-    0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-    -0.5, 0.5, -0.5,  0.0, 0.0, -1.0
+	-1.0, -1.0,  0.0, 1.0,
+	 1.0, -1.0,  1.0, 1.0,
+	-1.0,  1.0,  0.0, 0.0,
+	 1.0,  1.0,  1.0, 0.0,
 };
 
 typedef struct
@@ -239,7 +200,7 @@ typedef struct
     [renderEncoder setVertexBuffer:_dynamicConstantBuffer offset:(sizeof(uniforms_t) * _constantDataBufferIndex) atIndex:1 ];
     
     // Tell the render context we want to draw our primitives
-    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:36 instanceCount:1];
+    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4 instanceCount:1];
     [renderEncoder popDebugGroup];
     
     // We're done encoding commands

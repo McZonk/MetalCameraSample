@@ -24,8 +24,8 @@ typedef struct
 
 typedef struct
 {
-    packed_float3 position;
-    packed_float3 normal;
+    packed_float2 position;
+    packed_float2 normal;
 } vertex_t;
 
 typedef struct {
@@ -40,10 +40,10 @@ vertex ColorInOut lighting_vertex(device vertex_t* vertex_array [[ buffer(0) ]],
 {
     ColorInOut out;
     
-    float4 in_position = float4(float3(vertex_array[vid].position), 1.0);
+    float4 in_position = float4(float2(vertex_array[vid].position), 0.0, 1.0);
     out.position = uniforms.modelview_projection_matrix * in_position;
     
-    float3 normal = vertex_array[vid].normal;
+    float3 normal = float3(vertex_array[vid].normal, 0.0);
     float4 eye_normal = normalize(uniforms.normal_matrix * float4(normal, 0.0));
     float n_dot_l = dot(eye_normal.rgb, normalize(light_position));
     n_dot_l = fmax(0.0, n_dot_l);
