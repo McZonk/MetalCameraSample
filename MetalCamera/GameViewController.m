@@ -5,12 +5,13 @@
 @import Metal;
 @import simd;
 @import QuartzCore.CAMetalLayer;
+@import AVFoundation;
+#import <CoreVideo/CVMetalTextureCache.h>
+
 
 // The max number of command buffers in flight
 static const NSUInteger g_max_inflight_buffers = 3;
 
-// Max API memory buffer size.
-static const size_t MAX_BYTES_PER_FRAME = 1024*1024;
 
 float cubeVertexData[16] =
 {
@@ -25,6 +26,11 @@ typedef struct
     matrix_float4x4 modelview_projection_matrix;
     matrix_float4x4 normal_matrix;
 } uniforms_t;
+
+@interface GameViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
+
+@end
+
 
 @implementation GameViewController
 {
@@ -46,6 +52,10 @@ typedef struct
     id <MTLRenderPipelineState> _pipelineState;
     id <MTLBuffer> _vertexBuffer;
     id <MTLDepthStencilState> _depthState;
+	
+	AVCaptureDevice *_captureDevice;
+	AVCaptureSession *_captureSession;
+	dispatch_queue_t _captureQueue;
 }
 
 - (void)dealloc
@@ -60,6 +70,7 @@ typedef struct
     _inflight_semaphore = dispatch_semaphore_create(g_max_inflight_buffers);
     
     [self _setupMetal];
+	[self _setupCapture];
     [self _loadAssets];
     
     _timer = [CADisplayLink displayLinkWithTarget:self selector:@selector(_gameloop)];
@@ -98,6 +109,26 @@ typedef struct
     self.view.opaque = YES;
     self.view.backgroundColor = nil;
     self.view.contentScaleFactor = [UIScreen mainScreen].scale;
+}
+
+- (void)_setupCapture
+{
+	_captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+	if(_captureDevice != nil)
+	{
+		_captureSession = [[AVCaptureSession alloc] init];
+		
+		AVCaptureInput *input = [[AVCaptureDeviceInput alloc] initWithDevice:_captureDevice error:nil];
+		[_captureSession addInput:input];
+		
+		_captureQueue = dispatch_queue_create("captureQueue", DISPATCH_QUEUE_SERIAL);
+		
+		AVCaptureVideoDataOutput *videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+		[videoOutput setSampleBufferDelegate:self queue:_captureQueue];
+		[_captureSession addOutput:videoOutput];
+		
+		[_captureSession startRunning];
+	}
 }
 
 - (void)_loadAssets
@@ -239,6 +270,13 @@ typedef struct
     }
     
     return _currentDrawable;
+}
+
+#pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+	NSLog(@"%@", sampleBuffer);
 }
 
 @end
