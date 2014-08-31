@@ -6,8 +6,7 @@
 @import simd;
 @import QuartzCore.CAMetalLayer;
 @import AVFoundation;
-#import <CoreVideo/CVMetalTextureCache.h>
-
+#import <CoreVideoPlus/CoreVideoPlus.h>
 
 // The max number of command buffers in flight
 static const NSUInteger g_max_inflight_buffers = 3;
@@ -60,7 +59,7 @@ typedef struct {
 	AVCaptureSession *_captureSession;
 	dispatch_queue_t _captureQueue;
 	
-	CVMetalTextureCacheRef _textureCache;
+	id<CVPMetalTextureCache> _textureCache;
 }
 
 - (void)dealloc
@@ -118,7 +117,7 @@ typedef struct {
 
 - (void)_setupCapture
 {
-	CVMetalTextureCacheCreate(NULL, NULL, _device, NULL, &_textureCache);
+	_textureCache = [(id<CVPMetalDevice>)_device newTextureCacheWithAttributes:nil textureAttributes:nil error:nil];
 	
 	ColorConversion colorConversion = {
 		.matrix = {
@@ -305,38 +304,8 @@ typedef struct {
 {
 	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 	
-	id<MTLTexture> textureY = nil;
-	id<MTLTexture> textureCbCr = nil;
-	
-	// textureY
-	{
-		size_t width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-		size_t height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-		MTLPixelFormat pixelFormat = MTLPixelFormatR8Unorm;
-		
-		CVMetalTextureRef texture = NULL;
-		CVReturn status = CVMetalTextureCacheCreateTextureFromImage(NULL, _textureCache, pixelBuffer, NULL, pixelFormat, width, height, 0, &texture);
-		if(status == kCVReturnSuccess)
-		{
-			textureY = CVMetalTextureGetTexture(texture);
-			CFRelease(texture);
-		}
-	}
-	
-	// textureCbCr
-	{
-		size_t width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-		size_t height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-		MTLPixelFormat pixelFormat = MTLPixelFormatRG8Unorm;
-		
-		CVMetalTextureRef texture = NULL;
-		CVReturn status = CVMetalTextureCacheCreateTextureFromImage(NULL, _textureCache, pixelBuffer, NULL, pixelFormat, width, height, 1, &texture);
-		if(status == kCVReturnSuccess)
-		{
-			textureCbCr = CVMetalTextureGetTexture(texture);
-			CFRelease(texture);
-		}
-	}
+	id<MTLTexture> textureY = [_textureCache textureWithImageBuffer:pixelBuffer planeIndex:0 error:nil];
+	id<MTLTexture> textureCbCr = [_textureCache textureWithImageBuffer:pixelBuffer planeIndex:1 error:nil];
 	
 	if(textureY != nil && textureCbCr != nil)
 	{

@@ -14,6 +14,7 @@
 		5013D03019B2517800AFA68C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5013D02E19B2517800AFA68C /* Main.storyboard */; };
 		5013D03219B2517800AFA68C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5013D03119B2517800AFA68C /* Images.xcassets */; };
 		5013D03E19B2517800AFA68C /* MetalCameraTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5013D03D19B2517800AFA68C /* MetalCameraTests.m */; };
+		5022876419B3B0AF00B36274 /* libCoreVideoPlus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5022875919B3B00800B36274 /* libCoreVideoPlus.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,6 +24,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 5013D01E19B2517800AFA68C;
 			remoteInfo = MetalCamera;
+		};
+		5022875819B3B00800B36274 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5022875419B3B00800B36274 /* CoreVideoPlus-iOS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 50BC811D186C44E600F0CD4D;
+			remoteInfo = CoreVideoPlus;
+		};
+		5022876219B3B0AA00B36274 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5022875419B3B00800B36274 /* CoreVideoPlus-iOS.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 50BC811C186C44E600F0CD4D;
+			remoteInfo = CoreVideoPlus;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -40,6 +55,7 @@
 		5013D03719B2517800AFA68C /* MetalCameraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MetalCameraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5013D03C19B2517800AFA68C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5013D03D19B2517800AFA68C /* MetalCameraTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MetalCameraTests.m; sourceTree = "<group>"; };
+		5022875419B3B00800B36274 /* CoreVideoPlus-iOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "CoreVideoPlus-iOS.xcodeproj"; path = "CoreVideoPlus/CoreVideoPlus-iOS.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5022876419B3B0AF00B36274 /* libCoreVideoPlus.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +80,7 @@
 		5013D01619B2517800AFA68C = {
 			isa = PBXGroup;
 			children = (
+				5022875419B3B00800B36274 /* CoreVideoPlus-iOS.xcodeproj */,
 				5013D02119B2517800AFA68C /* MetalCamera */,
 				5013D03A19B2517800AFA68C /* MetalCameraTests */,
 				5013D02019B2517800AFA68C /* Products */,
@@ -119,6 +137,14 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		5022875519B3B00800B36274 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5022875919B3B00800B36274 /* libCoreVideoPlus.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -133,6 +159,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				5022876319B3B0AA00B36274 /* PBXTargetDependency */,
 			);
 			name = MetalCamera;
 			productName = MetalCamera;
@@ -186,6 +213,12 @@
 			mainGroup = 5013D01619B2517800AFA68C;
 			productRefGroup = 5013D02019B2517800AFA68C /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 5022875519B3B00800B36274 /* Products */;
+					ProjectRef = 5022875419B3B00800B36274 /* CoreVideoPlus-iOS.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				5013D01E19B2517800AFA68C /* MetalCamera */,
@@ -193,6 +226,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		5022875919B3B00800B36274 /* libCoreVideoPlus.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCoreVideoPlus.a;
+			remoteRef = 5022875819B3B00800B36274 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5013D01D19B2517800AFA68C /* Resources */ = {
@@ -240,6 +283,11 @@
 			isa = PBXTargetDependency;
 			target = 5013D01E19B2517800AFA68C /* MetalCamera */;
 			targetProxy = 5013D03819B2517800AFA68C /* PBXContainerItemProxy */;
+		};
+		5022876319B3B0AA00B36274 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CoreVideoPlus;
+			targetProxy = 5022876219B3B0AA00B36274 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -289,6 +337,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Applications/Xcode6-Beta6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include",
+					.,
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -324,6 +377,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Applications/Xcode6-Beta6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include",
+					.,
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -338,6 +396,10 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = MetalCamera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -349,6 +411,10 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = MetalCamera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -406,6 +472,7 @@
 				5013D04319B2517800AFA68C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		5013D04419B2517800AFA68C /* Build configuration list for PBXNativeTarget "MetalCameraTests" */ = {
 			isa = XCConfigurationList;
@@ -414,6 +481,7 @@
 				5013D04619B2517800AFA68C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

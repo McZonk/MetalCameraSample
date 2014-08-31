@@ -1,0 +1,3 @@
+[submodule "CoreVideoPlus"]
+	path = CoreVideoPlus
+	url = https://mczonk@github.com/McZonk/CoreVideoPlus.git
