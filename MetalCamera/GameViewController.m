@@ -170,7 +170,7 @@ typedef struct {
     [pipelineStateDescriptor setVertexFunction:vertexProgram];
     [pipelineStateDescriptor setFragmentFunction:fragmentProgram];
     pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
-    pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
     
     NSError* error = NULL;
     _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
